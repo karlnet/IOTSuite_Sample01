@@ -72,7 +72,7 @@ namespace IOTSuite_Sample01
                  serialPort.Open("com5", 9600).ContinueWith(async t =>
                  {
                      //await yfDQ8Model.AutoRead(3000, 10000, _blockQueue);
-                     await yfDI8Model.AutoRead(3000, 30000, _blockQueue);
+                     await yfDI8Model.AutoRead(1000, 5000, _blockQueue);
 
                  });
 
@@ -80,7 +80,7 @@ namespace IOTSuite_Sample01
 
             Task.Run(async () =>
             {
-                    await yfDQ8Model.AutoRead(3000, 30000, _blockQueue);
+                await yfDQ8Model.AutoRead(1000, 5000, _blockQueue);
 
             });
 
@@ -94,7 +94,7 @@ namespace IOTSuite_Sample01
             Task.Run(() =>
             {
                 serialPort5.Open("com8", 1200, SerialParity.Even).ContinueWith(t =>
-                LXSGZ20.AutoRead(3000, 30000, _blockQueue));
+                LXSGZ20.AutoRead(1000, 5000, _blockQueue));
             });
 
             // yf sensor model
@@ -106,7 +106,7 @@ namespace IOTSuite_Sample01
             Task.Run(() =>
            {
                serialPort2.Open("com6", 9600).ContinueWith(t =>
-               YFSensorModelRTU.AutoRead(3000, 30000, _blockQueue));
+               YFSensorModelRTU.AutoRead(1000, 5000, _blockQueue));
            });
 
             // sdt870 power model 
@@ -119,7 +119,7 @@ namespace IOTSuite_Sample01
             Task.Run(() =>
             {
                 serialPort3.Open("com7", 9600).ContinueWith(t =>
-                SDT870RTU.AutoRead(3000, 30000, _blockQueue));
+                SDT870RTU.AutoRead(1000, 5000, _blockQueue));
             });
 
 
@@ -132,7 +132,7 @@ namespace IOTSuite_Sample01
 
             Task.Run(async () =>
                {
-                   JObject rmtd = null;
+                   JObject rmtd = new JObject(); ;
                    while (true)
                    {
                        if (!_blockQueue.TryTake(out rmtd, 30000))
@@ -142,14 +142,17 @@ namespace IOTSuite_Sample01
                            rmtd.AddFirst(new JProperty("DeviceId", DEVICEID));
                        }
 
-                       Debug.WriteLine("get data from  queue \r\n");
+                       if (rmtd != null)
+                       {
+                           Debug.WriteLine("get data from  queue \r\n");
 
-                       var msgString = JsonConvert.SerializeObject(rmtd);
-                       var msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
+                           var msgString = JsonConvert.SerializeObject(rmtd);
+                           var msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
 
-                       await _deviceClient.SendEventAsync(msg2);
+                           await _deviceClient.SendEventAsync(msg2);
 
-                       Debug.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), 0, msgString);
+                           Debug.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), 0, msgString);
+                       }
                    }
                });
 
@@ -216,14 +219,14 @@ namespace IOTSuite_Sample01
 
                                     if (strRlyState.Equals("1"))
                                     {
-                                        yfDQ8Model.Q_Write(i-1, true);
+                                        yfDQ8Model.Q_Write(i - 1, true);
                                         yfDQ8Model.DeviceValue = (byte)(yfDQ8Model.DeviceValue | (0x1 << (i - 1)));
 
                                     }
-                                    else
+                                    else if (strRlyState.Equals("0"))
                                     {
-                                        yfDQ8Model.Q_Write(i-1, false);
-                                        yfDQ8Model.DeviceValue = (byte)(yfDQ8Model.DeviceValue & (~(0x1 <<( i - 1))));
+                                        yfDQ8Model.Q_Write(i - 1, false);
+                                        yfDQ8Model.DeviceValue = (byte)(yfDQ8Model.DeviceValue & (~(0x1 << (i - 1))));
 
                                     }
 

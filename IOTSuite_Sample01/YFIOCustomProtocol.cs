@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -198,7 +199,7 @@ namespace IOTSuite_Sample01
             //Stream.DiscardInBuffer();
             //Stream.DiscardOutBuffer();
             //发送数据
-            Stream.Write(SendBuffer, 0, SendCount);
+            await Stream.Write(SendBuffer, 0, SendCount);
 
             //广播命令，没有数据返回
             if (addr == 0) return 0;
@@ -217,67 +218,73 @@ namespace IOTSuite_Sample01
             //找帧头
             //if (ReceiveCount >= 8)
             //{
-           return await Stream.Read(ReceiveBuffer, 0, 8).ContinueWith((res) => {
-                //不是对应的响应帧
-                if (ReceiveBuffer[1] != SendBuffer[1])
-                {
-                    return -2;
-                }
+            //return await Stream.Read(ReceiveBuffer, 0, 8).ContinueWith((res) => {
+            //int res = 0;
+            await Stream.Read(ReceiveBuffer, 0, 8);
 
-                frameType = (FrameType)ReceiveBuffer[2];
-                //不是响应帧
-                if (frameType != FrameType.ResponseCommandFrame && frameType != FrameType.ResponseDataFrame)
-                {
-                    return -3;
-                }
 
-                //不是自己的帧
-                if (addr != (UInt16)(ReceiveBuffer[4] << 8 | ReceiveBuffer[3]))
-                {
-                    return -4;
-                }
+            //Debug.WriteLine("get data from  serial port , result is  {0}", res.Result);
 
-                //是命令帧
-                if (frameType == FrameType.ResponseCommandFrame)
+            //不是对应的响应帧
+            if (ReceiveBuffer[1] != SendBuffer[1])
+            {
+                return -2;
+            }
+
+            frameType = (FrameType)ReceiveBuffer[2];
+            //不是响应帧
+            if (frameType != FrameType.ResponseCommandFrame && frameType != FrameType.ResponseDataFrame)
+            {
+                return -3;
+            }
+
+            //不是自己的帧
+            if (addr != (UInt16)(ReceiveBuffer[4] << 8 | ReceiveBuffer[3]))
+            {
+                return -4;
+            }
+
+            //是命令帧
+            if (frameType == FrameType.ResponseCommandFrame)
+            {
+                return (ReceiveBuffer[6] << 8 | ReceiveBuffer[5]);
+            }
+            else
+            {
+                //数据包长度（含校验）
+                ReceiveCount = (ReceiveBuffer[6] << 8 | ReceiveBuffer[5]);
+
+                //延时 直到数据接收完毕
+                // for (int t = 0; t < ReceiveCount * 2 + TimeOver; t++)
+                //{
+                //    if (Stream.BytesToRead().Result >= ReceiveCount) break;
+                //    Task.Delay(10);
+                //}
+
+                //数据没有接收到
+                // if (Stream.BytesToRead().Result < ReceiveCount)
+                //{
+                //    return -5;
+                //}
+
+                //接收数据
+                //Stream.Read(ReceiveBuffer, 0, ReceiveCount);
+                Array.Copy(ReceiveBuffer, 8, ReceiveBuffer, 0, ReceiveCount);
+                crc16 = GetCRC16(ReceiveBuffer, 0, ReceiveCount - 2);
+                if (ReceiveBuffer[ReceiveCount - 2] == (crc16 & 0xFF) && ReceiveBuffer[ReceiveCount - 1] == ((crc16 >> 8) & 0xff))
                 {
-                    return (ReceiveBuffer[6] << 8 | ReceiveBuffer[5]);
+                    Array.Copy(ReceiveBuffer, 0, outBuffer, outOffset, ReceiveCount - 2);
+                    return ReceiveCount - 2;
+
                 }
                 else
                 {
-                    //数据包长度（含校验）
-                    ReceiveCount = (ReceiveBuffer[6] << 8 | ReceiveBuffer[5]);
-
-                   //延时 直到数据接收完毕
-                   // for (int t = 0; t < ReceiveCount * 2 + TimeOver; t++)
-                   //{
-                   //    if (Stream.BytesToRead().Result >= ReceiveCount) break;
-                   //    Task.Delay(10);
-                   //}
-
-                   //数据没有接收到
-                   // if (Stream.BytesToRead().Result < ReceiveCount)
-                   //{
-                   //    return -5;
-                   //}
-
-                   //接收数据
-                   //Stream.Read(ReceiveBuffer, 0, ReceiveCount);
-                   Array.Copy(ReceiveBuffer, 8, ReceiveBuffer, 0, ReceiveCount);
-                   crc16 = GetCRC16(ReceiveBuffer, 0, ReceiveCount - 2);
-                    if (ReceiveBuffer[ReceiveCount - 2] == (crc16 & 0xFF) && ReceiveBuffer[ReceiveCount - 1] == ((crc16 >> 8) & 0xff))
-                    {
-                        Array.Copy(ReceiveBuffer, 0, outBuffer, outOffset, ReceiveCount - 2);
-                        return ReceiveCount - 2;
-
-                    }
-                    else
-                    {
-                        return -6;
-                    }
-
+                    return -6;
                 }
-            });
-        //}
+
+            }
+            //});
+            //}
             //return -7;
         }
 

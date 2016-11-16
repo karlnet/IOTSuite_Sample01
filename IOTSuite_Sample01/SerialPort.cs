@@ -14,6 +14,7 @@ namespace IOTSuite_Sample01
     class SerialPort : IStreamProtocol
 
     {
+        public object Mutex = new object();
         private SerialDevice serial = null;
         private DataWriter dataWriteObject = null;
         private DataReader dataReaderObject = null;
@@ -44,7 +45,7 @@ namespace IOTSuite_Sample01
                 //serial.Open();
                 return 0;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 return -1;
             }
@@ -82,16 +83,17 @@ namespace IOTSuite_Sample01
                 dataReaderObject = new DataReader(serial.InputStream);
                 dataReaderObject.InputStreamOptions = InputStreamOptions.Partial;
 
-                CancellationTokenSource cts = new CancellationTokenSource(5000); // cancel after 5000ms
+                CancellationTokenSource cts = new CancellationTokenSource(2000); // cancel after 5000ms
                 DataReaderLoadOperation op = dataReaderObject.LoadAsync(ReadBufferLength);
                 uint bytesAvailable = await op.AsTask<uint>(cts.Token);
-                Debug.WriteLine("get data from  serial port ,length is : {0} \r\n", bytesAvailable);
+
+                Debug.WriteLine("get data from  serial port {1} ,length is : {0} \r\n", bytesAvailable, serial.PortName);
 
                 if (bytesAvailable <= 0) return -1;
 
                 byte[] dataReceived = new byte[bytesAvailable];
                 dataReaderObject.ReadBytes(dataReceived);
-                Debug.WriteLine("get data from  serial port OK \r\n");
+
                 Array.Copy(dataReceived, buffer, (int)bytesAvailable);
 
                 return (int)bytesAvailable;
@@ -113,7 +115,7 @@ namespace IOTSuite_Sample01
             }
         }
 
-        public async Task   Write(byte[] buffer, int offset, int count)
+        public async Task Write(byte[] buffer, int offset, int count)
         {
             //serial.Write(buffer, offset, count);
             try

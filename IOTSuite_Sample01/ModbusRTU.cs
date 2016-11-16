@@ -392,7 +392,7 @@ namespace IOTSuite_Sample01
         }
         public async Task<int> SendCommand(UInt16 intSendNum, byte[] bytSendData, UInt16 intInceptNum, byte[] bytInceptData, int intOverTimeIdx)
         {
-            Stream.Write(bytSendData, 0, intSendNum);
+            await Stream.Write(bytSendData, 0, intSendNum);
 
             if (intInceptNum == 0)
             {

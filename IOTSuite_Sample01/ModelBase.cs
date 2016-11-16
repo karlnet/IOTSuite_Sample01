@@ -31,7 +31,7 @@ namespace IOTSuite_Sample01
                     JObject rmtd = WriteAndRead();
 
                     //  error
-                    if (rmtd.Count == 0) continue;
+                    if ( rmtd.Count == 0) continue;
 
                     rmtd.AddFirst(new JProperty("ProjectId", ProjectId));
                     rmtd.AddFirst(new JProperty("DeviceId", DeviceId));
