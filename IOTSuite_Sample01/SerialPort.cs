@@ -33,6 +33,8 @@ namespace IOTSuite_Sample01
                 if (dis.Count == 0) return -1;
 
                 serial = await SerialDevice.FromIdAsync(dis[0].Id);
+                if (serial == null) return -1;
+
                 Debug.WriteLine("   open serial OK \r\n", serial.PortName);
 
                 serial.WriteTimeout = TimeSpan.FromMilliseconds(1000);
@@ -117,6 +119,7 @@ namespace IOTSuite_Sample01
 
         public async Task Write(byte[] buffer, int offset, int count)
         {
+            if (serial == null)  return ;
             //serial.Write(buffer, offset, count);
             try
             {

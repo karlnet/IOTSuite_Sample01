@@ -19,8 +19,9 @@
     <PackageCertificateKeyFile>IOTSuite_Sample01_TemporaryKey.pfx</PackageCertificateKeyFile>
     <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
     <AppxBundle>Always</AppxBundle>
-    <AppxBundlePlatforms>x86</AppxBundlePlatforms>
+    <AppxBundlePlatforms>x86|x64</AppxBundlePlatforms>
     <PackageCertificateThumbprint>77E29C30A51479B467A35C45DF49BE3834C69FD3</PackageCertificateThumbprint>
+    <AppxPackageDir>C:\Users\hhnext\Desktop\IC\</AppxPackageDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>

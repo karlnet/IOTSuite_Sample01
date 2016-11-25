@@ -38,8 +38,8 @@ namespace IOTSuite_Sample01
 
         //private const string DeviceConnectionString =
         //    "HostName=hhnext.azure-devices.net;SharedAccessKeyName=iothubowner;SharedAccessKey=jjHgtQz3AtfnTn6p/I5zH9POHLg9f55WnYlPD4y0Sqw=";
-        DeviceClient _deviceClient =
-            DeviceClient.Create(IOTHUB_RUI, new DeviceAuthenticationWithRegistrySymmetricKey("Device006", "f04NqhzRUXYf8MDkem642M22WSN7MbEmK9Ozj2HIOYk="), TransportType.Amqp);
+        DeviceClient _deviceClient = null;
+            //DeviceClient.Create(IOTHUB_RUI, new DeviceAuthenticationWithRegistrySymmetricKey("Device006", "f04NqhzRUXYf8MDkem642M22WSN7MbEmK9Ozj2HIOYk="), TransportType.Amqp);
 
         //DeviceClient _deviceClient =
         //    DeviceClient.Create(IOTHUB_RUI, new DeviceAuthenticationWithRegistrySymmetricKey("Device006", "A4neK6GT+miVzAuQXdbaqIZSoRWBtSwbKTfyySOk8L0="), TransportType.Amqp);
@@ -61,42 +61,49 @@ namespace IOTSuite_Sample01
         {
             this.InitializeComponent();
 
+            try
+            {
+                _deviceClient =
+                DeviceClient.Create(IOTHUB_RUI, new DeviceAuthenticationWithRegistrySymmetricKey("Device006", "f04NqhzRUXYf8MDkem642M22WSN7MbEmK9Ozj2HIOYk="), TransportType.Amqp);
+            }
+            catch { }
+
             //  yf DQ model
-            SerialPort serialPort = new SerialPort();
-            yfDQ8Model = new YFDQ8Model(new YFIOCustomProtocol(serialPort), UInt16.Parse("2"));
-            //  yf DI model
-            yfDI8Model = new YFDI8Model(new YFIOCustomProtocol(serialPort), UInt16.Parse("1"));
+            /*            SerialPort serialPort = new SerialPort();
+                        yfDQ8Model = new YFDQ8Model(new YFIOCustomProtocol(serialPort), UInt16.Parse("2"));
+                        //  yf DI model
+                        yfDI8Model = new YFDI8Model(new YFIOCustomProtocol(serialPort), UInt16.Parse("1"));
 
-            Task.Run(() =>
-             {
-                 serialPort.Open("com5", 9600).ContinueWith(async t =>
-                 {
-                     //await yfDQ8Model.AutoRead(3000, 10000, _blockQueue);
-                     await yfDI8Model.AutoRead(1000, 5000, _blockQueue);
+                        Task.Run(() =>
+                         {
+                             serialPort.Open("com5", 9600).ContinueWith(async t =>
+                             {
+                                 //await yfDQ8Model.AutoRead(3000, 10000, _blockQueue);
+                                 await yfDI8Model.AutoRead(1000, 5000, _blockQueue);
 
-                 });
+                             });
 
-             });
+                         });
 
-            Task.Run(async () =>
-            {
-                await yfDQ8Model.AutoRead(1000, 5000, _blockQueue);
+                        Task.Run(async () =>
+                        {
+                            await yfDQ8Model.AutoRead(1000, 5000, _blockQueue);
 
-            });
+                        });
 
-            // JBSB_LXSGZ20 model
-            SerialPort serialPort5 = new SerialPort();
-            LXSGZ20 = new JBSB_LXSGZ20(new SR188(serialPort5));
+                        // JBSB_LXSGZ20 model
+                        SerialPort serialPort5 = new SerialPort();
+                        LXSGZ20 = new JBSB_LXSGZ20(new SR188(serialPort5));
 
-            LXSGZ20.DeviceId = DEVICEID;
-            LXSGZ20.ProjectId = PROJECTID;
+                        LXSGZ20.DeviceId = DEVICEID;
+                        LXSGZ20.ProjectId = PROJECTID;
 
-            Task.Run(() =>
-            {
-                serialPort5.Open("com8", 1200, SerialParity.Even).ContinueWith(t =>
-                LXSGZ20.AutoRead(1000, 5000, _blockQueue));
-            });
-
+                        Task.Run(() =>
+                        {
+                            serialPort5.Open("com8", 1200, SerialParity.Even).ContinueWith(t =>
+                            LXSGZ20.AutoRead(1000, 5000, _blockQueue));
+                        });
+            
             // yf sensor model
             SerialPort serialPort2 = new SerialPort();
             YFSensorModelRTU = new YFSensorModel(new ModbusRTU(serialPort2));
@@ -105,37 +112,42 @@ namespace IOTSuite_Sample01
             YFSensorModelRTU.ProjectId = PROJECTID;
             Task.Run(() =>
            {
-               serialPort2.Open("com6", 9600).ContinueWith(t =>
+               serialPort2.Open("com8", 9600).ContinueWith(t =>
                YFSensorModelRTU.AutoRead(1000, 5000, _blockQueue));
-           });
+           });*/
 
-            // sdt870 power model 
-            SerialPort serialPort3 = new SerialPort();
-            SDT870RTU = new Standardel_SDT870(new ModbusRTU(serialPort3));
+            /*           // sdt870 power model 
+                       SerialPort serialPort3 = new SerialPort();
+                       SDT870RTU = new Standardel_SDT870(new ModbusRTU(serialPort3));
 
-            SDT870RTU.DeviceId = DEVICEID;
-            SDT870RTU.ProjectId = PROJECTID;
+                       SDT870RTU.DeviceId = DEVICEID;
+                       SDT870RTU.ProjectId = PROJECTID;
 
-            Task.Run(() =>
-            {
-                serialPort3.Open("com7", 9600).ContinueWith(t =>
-                SDT870RTU.AutoRead(1000, 5000, _blockQueue));
-            });
+                       Task.Run(() =>
+                       {
+                           serialPort3.Open("com7", 9600).ContinueWith(t =>
+                           SDT870RTU.AutoRead(1000, 5000, _blockQueue));
+                       });
 
+           */
 
-
-            Task.Run(async () =>
-                {
-                    await ReceiveCommands(_deviceClient);
-                });
+            //Task.Run(async () =>
+            //    {
+            //        await ReceiveCommands(_deviceClient);
+            //    });
 
 
             Task.Run(async () =>
                {
-                   JObject rmtd = new JObject(); ;
+                   JObject rmtd = null;
+                   string msgString = null;
+                   Message msg2 = null;
+
                    while (true)
                    {
-                       if (!_blockQueue.TryTake(out rmtd, 30000))
+                       rmtd = new JObject();
+
+                       if (!_blockQueue.TryTake(out rmtd, 3000))
                        {
                            rmtd = new JObject();
                            rmtd.AddFirst(new JProperty("ProjectId", PROJECTID));
@@ -145,13 +157,17 @@ namespace IOTSuite_Sample01
                        if (rmtd != null)
                        {
                            Debug.WriteLine("get data from  queue \r\n");
+                           try
+                           {
+                               msgString = JsonConvert.SerializeObject(rmtd);
+                               msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
 
-                           var msgString = JsonConvert.SerializeObject(rmtd);
-                           var msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
+                               await _deviceClient.SendEventAsync(msg2);
+                               Debug.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), 0, msgString);
+                           }
+                           catch (Exception e) { }
 
-                           await _deviceClient.SendEventAsync(msg2);
 
-                           Debug.WriteLine("\t{0}> Sending message: {1}, Data: [{2}]", DateTime.Now.ToLocalTime(), 0, msgString);
                        }
                    }
                });
@@ -161,17 +177,28 @@ namespace IOTSuite_Sample01
 
         async Task ReceiveCommands(DeviceClient deviceClient)
         {
-            Message receivedMessage;
+            Message receivedMessage = null; ;
             string messageData;
             JObject jsonMmessageData = null;
+            string msgString = null;
+            Message msg2 = null;
 
             while (true)
             {
-                receivedMessage = await deviceClient.ReceiveAsync();
+                try
+                {
+                    receivedMessage = await deviceClient.ReceiveAsync();
+                }
+                catch (Exception e) { }
+
                 //Debug.WriteLine("Received message.\r\n");
                 if (receivedMessage != null)
                 {
-                    await deviceClient.CompleteAsync(receivedMessage);
+                    try
+                    {
+                        await deviceClient.CompleteAsync(receivedMessage);
+                    }
+                    catch (Exception e) { }
 
                     messageData = Encoding.ASCII.GetString(receivedMessage.GetBytes());
                     Debug.WriteLine("\t{0}> Received message: {1}", DateTime.Now.ToLocalTime(), messageData);
@@ -184,28 +211,46 @@ namespace IOTSuite_Sample01
 
                         if ("GetAllState".Equals((string)jsonMmessageData["Cmd"]))
                         {
-                            var msgString = JsonConvert.SerializeObject(YFSensorModelRTU);
-                            var msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
-                            await _deviceClient.SendEventAsync(msg2);
+                            if (YFSensorModelRTU != null)
+                            {
+                                msgString = JsonConvert.SerializeObject(YFSensorModelRTU);
+                                msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
+                                try
+                                {
+                                    await _deviceClient.SendEventAsync(msg2);
+                                }
+                                catch (Exception e) { }
+                            }
 
-                            msgString = JsonConvert.SerializeObject(SDT870RTU);
-                            msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
-                            await _deviceClient.SendEventAsync(msg2);
+                            if (SDT870RTU != null)
+                            {
+                                msgString = JsonConvert.SerializeObject(SDT870RTU);
+                                msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
+                                await _deviceClient.SendEventAsync(msg2);
+                            }
 
-                            msgString = JsonConvert.SerializeObject(LXSGZ20);
-                            msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
-                            await _deviceClient.SendEventAsync(msg2);
+                            if (LXSGZ20 != null)
+                            {
+                                msgString = JsonConvert.SerializeObject(LXSGZ20);
+                                msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
+                                await _deviceClient.SendEventAsync(msg2);
+                            }
 
-                            msgString = JsonConvert.SerializeObject(yfDI8Model);
-                            msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
-                            await _deviceClient.SendEventAsync(msg2);
+                            if (yfDI8Model != null)
+                            {
+                                msgString = JsonConvert.SerializeObject(yfDI8Model);
+                                msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
+                                await _deviceClient.SendEventAsync(msg2);
+                            }
 
-                            msgString = JsonConvert.SerializeObject(yfDQ8Model);
-                            msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
-                            await _deviceClient.SendEventAsync(msg2);
-
+                            if (yfDQ8Model != null)
+                            {
+                                msgString = JsonConvert.SerializeObject(yfDQ8Model);
+                                msg2 = new Message(Encoding.ASCII.GetBytes(msgString));
+                                await _deviceClient.SendEventAsync(msg2);
+                            }
                         }
-                        else if ("SetRly".Equals((string)jsonMmessageData["Cmd"]))
+                        else if ("SetRly".Equals((string)jsonMmessageData["Cmd"]) && (yfDQ8Model != null))
                         {
                             JToken rlyState = null;
                             string strRlyState = null;
